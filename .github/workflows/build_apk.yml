@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -13,13 +13,15 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: '3.38.x'
+          cache: true
 
       - name: Install dependencies
         run: |
@@ -30,7 +32,7 @@ jobs:
         run: |
           cd simple_live_app/android
           keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          echo "storeFile=debug.keystore" > key.properties
+          echo "storeFile=$(pwd)/debug.keystore" > key.properties
           echo "storePassword=android" >> key.properties
           echo "keyAlias=androiddebugkey" >> key.properties
           echo "keyPassword=android" >> key.properties
@@ -38,10 +40,13 @@ jobs:
       - name: Build APK
         run: |
           cd simple_live_app
-          flutter build apk --release
+          flutter build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: simple-live-apk
-          path: simple_live_app/build/app/outputs/flutter-apk/app-release.apk
+          path: |
+            simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-x86_64-release.apk
