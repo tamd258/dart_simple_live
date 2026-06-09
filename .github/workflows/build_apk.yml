@@ -9,8 +9,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: dev
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -24,6 +22,12 @@ jobs:
         with:
           flutter-version: '3.38.x'
           cache: true
+
+      - name: Fix Kotlin version
+        run: |
+          sed -i 's/id("org.jetbrains.kotlin.android") version "2.1.0"/id("org.jetbrains.kotlin.android") version "2.2.20"/' simple_live_app/android/settings.gradle.kts
+          sed -i 's/id("com.android.application") version "8.9.1"/id("com.android.application") version "8.11.1"/' simple_live_app/android/settings.gradle.kts
+          cat simple_live_app/android/settings.gradle.kts
 
       - name: Install dependencies
         run: |
